@@ -1,4 +1,5 @@
 import psycopg2
+import psycopg2.pool
 
 db_params = {
     'dbname': 'postgres',
@@ -8,8 +9,11 @@ db_params = {
     'port': '5432'
 }
 
-def connect_to_db():
-    conn = psycopg2.connect(**db_params)
-    return conn
+pool = psycopg2.pool.SimpleConnectionPool(1, 10, **db_params)
 
-conn = connect_to_db()
+
+def get_connection():
+    return pool.getconn()
+
+def release_connection(conn):
+    pool.putconn(conn)
