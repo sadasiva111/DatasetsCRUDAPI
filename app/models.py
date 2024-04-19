@@ -67,7 +67,7 @@ class DatasetModel:
         if not conn or not cur:
             return False, "Failed to get database connection"
         try:
-            cur.execute("SELECT * FROM datasets WHERE dataset_id = %s", (dataset_id,))
+            cur.execute("SELECT * FROM datasets WHERE dataset_id = %s AND is_deleted = false", (dataset_id,))
             datasets = cur.fetchall()
             dataset_list = []
             if datasets:
@@ -110,6 +110,10 @@ class DatasetModel:
             return False, "Failed to get database connection"
 
         try:
+            cur.execute("SELECT COUNT(*) FROM datasets WHERE dataset_id = %s AND is_deleted = false", (dataset_id,))
+            count = cur.fetchone()[0]
+            if count == 0:
+                return False, "Dataset not found or already deleted"
             set_clause = ', '.join([f"{field} = %s" for field in data.keys()])
             query = f"UPDATE datasets SET {set_clause} WHERE dataset_id = %s"
             values = list(data.values())
@@ -133,13 +137,13 @@ class DatasetModel:
             return False, "Failed to get database connection"
 
         try:
-            cur.execute("DELETE FROM datasets WHERE dataset_id = %s", (dataset_id,))
+            cur.execute("UPDATE datasets SET is_deleted = true WHERE dataset_id = %s", (dataset_id,))
             conn.commit()
             return True, None
 
         except Exception as e:
             conn.rollback()
-            print(f"Error deleting dataset: {e}")
+            print(f"Error soft deleting dataset: {e}")
             return False, str(e)
 
         finally:
@@ -152,6 +156,11 @@ class DatasetModel:
             return False, "Failed to get database connection"
 
         try:
+            cur.execute("SELECT COUNT(*) FROM datasets WHERE dataset_id = %s AND is_deleted = false", (dataset_id,))
+            count = cur.fetchone()[0]
+            if count == 0:
+                return False, "Dataset not found or already deleted"
+            
             if not data:
                 return False, "No JSON data provided"
 

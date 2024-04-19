@@ -1,2 +1,6 @@
 /.DS_Store
 /path
+/app/__pycache__
+/app/ToDo
+/app/templates
+/app/.prettierrc
