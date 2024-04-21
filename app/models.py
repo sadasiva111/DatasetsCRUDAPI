@@ -1,6 +1,7 @@
 from flask import request
 from db import get_connection, release_connection
 from validations import validate_dataset_data
+import json
 
 class DatasetModel:
     def __init__(self):
@@ -37,14 +38,14 @@ class DatasetModel:
                 data['dataset_id'],
                 data['type'],
                 data['name'],
-                data['validation_config'],
-                data['extraction_config'],
-                data['dedup_config'],
-                data['data_schema'],
-                data['denorm_config'],
-                data['router_config'],
-                data['dataset_config'],
-                data['tags'],
+                json.dumps(data['validation_config']),
+                json.dumps(data['extraction_config']),
+                json.dumps(data['dedup_config']),
+                json.dumps(data['data_schema']),
+                json.dumps(data['denorm_config']),
+                json.dumps(data['router_config']),
+                json.dumps(data['dataset_config']),
+                json.dumps(data['tags']),
                 data['data_version'],
                 data['status'],
                 data['created_by'],
@@ -110,10 +111,15 @@ class DatasetModel:
             return False, "Failed to get database connection"
 
         try:
+            for key, value in data.items():
+                if isinstance(value, dict):
+                    data[key] = json.dumps(value)
+
             cur.execute("SELECT COUNT(*) FROM datasets WHERE dataset_id = %s AND is_deleted = false", (dataset_id,))
             count = cur.fetchone()[0]
             if count == 0:
                 return False, "Dataset not found or already deleted"
+
             set_clause = ', '.join([f"{field} = %s" for field in data.keys()])
             query = f"UPDATE datasets SET {set_clause} WHERE dataset_id = %s"
             values = list(data.values())
@@ -190,14 +196,14 @@ class DatasetModel:
                 data['dataset_id'],
                 data['type'],
                 data['name'],
-                data['validation_config'],
-                data['extraction_config'],
-                data['dedup_config'],
-                data['data_schema'],
-                data['denorm_config'],
-                data['router_config'],
-                data['dataset_config'],
-                data['tags'],
+                json.dumps(data['validation_config']),
+                json.dumps(data['extraction_config']),
+                json.dumps(data['dedup_config']),
+                json.dumps(data['data_schema']),
+                json.dumps(data['denorm_config']),
+                json.dumps(data['router_config']),
+                json.dumps(data['dataset_config']),
+                json.dumps(data['tags']),
                 data['data_version'],
                 data['status'],
                 data['created_by'],

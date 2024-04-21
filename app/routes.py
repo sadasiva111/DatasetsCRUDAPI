@@ -44,7 +44,7 @@ def get_dataset(dataset_id):
             return jsonify([]), 200
     else:
         logger.error(f'Error retrieving dataset: {result}')
-        return jsonify({'error': result}), 500
+        return jsonify({'error': result}), 400
     
 @bp.route('/dataset/<dataset_id>', methods=['PATCH'])
 def update_dataset(dataset_id):
