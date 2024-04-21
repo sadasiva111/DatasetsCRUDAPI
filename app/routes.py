@@ -29,7 +29,7 @@ def create_dataset():
         return jsonify({'message': 'Created Dataset'})
     else:
         logger.error(f'Error creating dataset: {error_message}')
-        return jsonify({'error': error_message}), 500
+        return jsonify({'error': error_message}), 400
     
 @bp.route('/dataset/<dataset_id>', methods=['GET'])
 def get_dataset(dataset_id):
@@ -55,7 +55,7 @@ def update_dataset(dataset_id):
     if success:
         return jsonify({'message': 'Dataset updated'}), 200
     else:
-        return jsonify({'error': error_message}), 500
+        return jsonify({'error': error_message}), 400
 
 @bp.route('/dataset/<dataset_id>', methods=['DELETE'])
 def delete_dataset(dataset_id):
@@ -64,7 +64,7 @@ def delete_dataset(dataset_id):
     if success:
         return jsonify({'message': 'Dataset soft deleted'}), 200
     else:
-        return jsonify({'error': error_message}), 500
+        return jsonify({'error': error_message}), 400
     
 @bp.route('/dataset/<dataset_id>', methods=['PUT'])
 def update_whole_dataset(dataset_id):
@@ -74,5 +74,5 @@ def update_whole_dataset(dataset_id):
     if success:
         return jsonify({'message': 'Dataset updated'}), 200
     else:
-        return jsonify({'error': error_message}), 500
+        return jsonify({'error': error_message}), 400
     
