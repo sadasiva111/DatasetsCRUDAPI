@@ -63,12 +63,12 @@ class DatasetModel:
         finally:
             self.rel_conn()
 
-    def get_dataset(self, dataset_id):
+    def get_dataset(self, id):
         conn, cur = self.get_conn()
         if not conn or not cur:
             return False, "Failed to get database connection"
         try:
-            cur.execute("SELECT * FROM datasets WHERE dataset_id = %s AND is_deleted = false", (dataset_id,))
+            cur.execute("SELECT * FROM datasets WHERE id = %s AND is_deleted = false", (id,))
             datasets = cur.fetchall()
             dataset_list = []
             if datasets:
@@ -97,7 +97,7 @@ class DatasetModel:
                     dataset_list.append(dataset_dict)
                 return True, dataset_list
             else:
-                return False, "No datasets found for the given dataset_id"
+                return False, "No datasets found for the given id"
         except Exception as e:
             print(f"Error retrieving dataset: {e}")
             return False, str(e)
@@ -105,7 +105,10 @@ class DatasetModel:
             self.rel_conn()
 
 
-    def update_dataset(self, dataset_id, data):
+    def update_dataset(self, id, data):
+        is_valid, error_message = validate_dataset_data(data)
+        if not is_valid:
+            return False, error_message
         conn, cur = self.get_conn()
         if not conn or not cur:
             return False, "Failed to get database connection"
@@ -115,15 +118,15 @@ class DatasetModel:
                 if isinstance(value, dict):
                     data[key] = json.dumps(value)
 
-            cur.execute("SELECT COUNT(*) FROM datasets WHERE dataset_id = %s AND is_deleted = false", (dataset_id,))
+            cur.execute("SELECT COUNT(*) FROM datasets WHERE id = %s AND is_deleted = false", (id,))
             count = cur.fetchone()[0]
             if count == 0:
                 return False, "Dataset not found or already deleted"
 
             set_clause = ', '.join([f"{field} = %s" for field in data.keys()])
-            query = f"UPDATE datasets SET {set_clause} WHERE dataset_id = %s"
+            query = f"UPDATE datasets SET {set_clause} WHERE id = %s"
             values = list(data.values())
-            values.append(dataset_id)
+            values.append(id)
 
             cur.execute(query, values)
             conn.commit()
@@ -137,13 +140,18 @@ class DatasetModel:
         finally:
             self.rel_conn()
 
-    def delete_dataset(self, dataset_id):
+    def delete_dataset(self, id):
         conn, cur = self.get_conn()
         if not conn or not cur:
             return False, "Failed to get database connection"
 
         try:
-            cur.execute("UPDATE datasets SET is_deleted = true WHERE dataset_id = %s", (dataset_id,))
+            cur.execute("SELECT is_deleted FROM datasets WHERE id = %s", (id,))
+            result = cur.fetchone()
+
+            if result and result[0]:
+                return False, "Dataset has already been deleted"
+            cur.execute("UPDATE datasets SET is_deleted = true WHERE id = %s", (id,))
             conn.commit()
             return True, None
 
@@ -156,13 +164,16 @@ class DatasetModel:
             self.rel_conn()
 
 
-    def update_whole_dataset(self, dataset_id, data):
+    def update_whole_dataset(self, id, data):
+        is_valid, error_message = validate_dataset_data(data)
+        if not is_valid:
+            return False, error_message
         conn, cur = self.get_conn()
         if not conn or not cur:
             return False, "Failed to get database connection"
 
         try:
-            cur.execute("SELECT COUNT(*) FROM datasets WHERE dataset_id = %s AND is_deleted = false", (dataset_id,))
+            cur.execute("SELECT COUNT(*) FROM datasets WHERE id = %s AND is_deleted = false", (id,))
             count = cur.fetchone()[0]
             if count == 0:
                 return False, "Dataset not found or already deleted"
@@ -190,7 +201,7 @@ class DatasetModel:
                     created_date = %s,
                     updated_date = %s,
                     published_date = %s
-                WHERE dataset_id = %s
+                WHERE id = %s
             """
             values = (
                 data['dataset_id'],
@@ -211,7 +222,7 @@ class DatasetModel:
                 data['created_date'],
                 data['updated_date'],
                 data['published_date'],
-                dataset_id
+                id
             )
 
             cur.execute(query, values)
