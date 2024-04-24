@@ -12,12 +12,14 @@ def verify_id(id):
     if not is_valid:
         logger.error(error_message)
         return jsonify({'error': error_message}), 400
-    
+    return None
+
 def verify_dataset_data(data):
     is_valid, error_message = validate_request_data(data)
     if not is_valid:
         logger.error(error_message)
         return jsonify({'error': error_message}), 400
+    return None
 
 @bp.route('/dataset', methods=['POST'])
 def create_dataset():

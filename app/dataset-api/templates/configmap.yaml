@@ -9,6 +9,7 @@ metadata:
     system.querying: "true"
     system.api: "true"
 data:
+  CRITICAL_FILE: /app/requirements.txt
   init.sql: |
 
     DO

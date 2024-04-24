@@ -23,51 +23,6 @@ class DatasetModel:
         if self.conn:
             release_connection(self.conn)
 
-        
-    # def create_dataset(self, data):
-
-    #     conn, cur = self.get_conn()
-    #     if not conn or not cur:
-    #         return False, "Failed to get database connection"
-            
-    #     try:
-    #         created_date = self.get_system_time()
-    #         cur.execute("""INSERT INTO datasets
-    #             (id, dataset_id, "type", "name", validation_config, extraction_config, dedup_config, data_schema, denorm_config, router_config, dataset_config, tags, data_version, status, created_by, updated_by, created_date, updated_date, published_date)
-    #             VALUES( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-    #         """, (
-    #             data['id'],
-    #             data['dataset_id'],
-    #             data['type'],
-    #             data['name'],
-    #             json.dumps(data['validation_config']),
-    #             json.dumps(data['extraction_config']),
-    #             json.dumps(data['dedup_config']),
-    #             json.dumps(data['data_schema']),
-    #             json.dumps(data['denorm_config']),
-    #             json.dumps(data['router_config']),
-    #             json.dumps(data['dataset_config']),
-    #             json.dumps(data['tags']),
-    #             data['data_version'],
-    #             data['status'],
-    #             data['created_by'],
-    #             data['updated_by'],
-    #             created_date,
-    #             created_date,
-    #             created_date
-    #         ))
-    #         is_valid, error_message = validate_dataset_data(data)
-    #         if not is_valid:
-    #             return False, error_message
-    #         conn.commit()
-    #         return True, None
-    #     except Exception as e:
-    #         conn.rollback()
-    #         print(f"Error creating dataset: {e}")
-    #         return False, str(e)
-    #     finally:
-    #         self.rel_conn()
-
     def create_dataset(self, data):
         conn, cur = self.get_conn()
         if not conn or not cur:
