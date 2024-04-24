@@ -2,12 +2,16 @@ from flask import request
 from db import get_connection, release_connection
 from validations import validate_dataset_data
 import json
+from datetime import datetime
 
 class DatasetModel:
     def __init__(self):
         self.conn = None
         self.cur = None
 
+    def get_system_time(self):
+        return datetime.now()
+    
     def get_conn(self):
         self.conn = get_connection()
         self.cur = self.conn.cursor()
@@ -20,40 +24,69 @@ class DatasetModel:
             release_connection(self.conn)
 
         
-    def create_dataset(self, data):
-        is_valid, error_message = validate_dataset_data(data)
-        if not is_valid:
-            return False, error_message
+    # def create_dataset(self, data):
 
+    #     conn, cur = self.get_conn()
+    #     if not conn or not cur:
+    #         return False, "Failed to get database connection"
+            
+    #     try:
+    #         created_date = self.get_system_time()
+    #         cur.execute("""INSERT INTO datasets
+    #             (id, dataset_id, "type", "name", validation_config, extraction_config, dedup_config, data_schema, denorm_config, router_config, dataset_config, tags, data_version, status, created_by, updated_by, created_date, updated_date, published_date)
+    #             VALUES( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    #         """, (
+    #             data['id'],
+    #             data['dataset_id'],
+    #             data['type'],
+    #             data['name'],
+    #             json.dumps(data['validation_config']),
+    #             json.dumps(data['extraction_config']),
+    #             json.dumps(data['dedup_config']),
+    #             json.dumps(data['data_schema']),
+    #             json.dumps(data['denorm_config']),
+    #             json.dumps(data['router_config']),
+    #             json.dumps(data['dataset_config']),
+    #             json.dumps(data['tags']),
+    #             data['data_version'],
+    #             data['status'],
+    #             data['created_by'],
+    #             data['updated_by'],
+    #             created_date,
+    #             created_date,
+    #             created_date
+    #         ))
+    #         is_valid, error_message = validate_dataset_data(data)
+    #         if not is_valid:
+    #             return False, error_message
+    #         conn.commit()
+    #         return True, None
+    #     except Exception as e:
+    #         conn.rollback()
+    #         print(f"Error creating dataset: {e}")
+    #         return False, str(e)
+    #     finally:
+    #         self.rel_conn()
+
+    def create_dataset(self, data):
         conn, cur = self.get_conn()
         if not conn or not cur:
             return False, "Failed to get database connection"
-            
+
         try:
-            cur.execute("""INSERT INTO datasets
-                (id, dataset_id, "type", "name", validation_config, extraction_config, dedup_config, data_schema, denorm_config, router_config, dataset_config, tags, data_version, status, created_by, updated_by, created_date, updated_date, published_date)
-                VALUES( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (
-                data['id'],
-                data['dataset_id'],
-                data['type'],
-                data['name'],
-                json.dumps(data['validation_config']),
-                json.dumps(data['extraction_config']),
-                json.dumps(data['dedup_config']),
-                json.dumps(data['data_schema']),
-                json.dumps(data['denorm_config']),
-                json.dumps(data['router_config']),
-                json.dumps(data['dataset_config']),
-                json.dumps(data['tags']),
-                data['data_version'],
-                data['status'],
-                data['created_by'],
-                data['updated_by'],
-                data['created_date'],
-                data['updated_date'],
-                data['published_date']
-            ))
+            created_date = self.get_system_time()
+            keys = ['id', 'dataset_id', 'type', 'name', 'validation_config', 'extraction_config', 'dedup_config', 'data_schema', 'denorm_config', 'router_config', 'dataset_config', 'tags', 'data_version', 'status', 'created_by', 'updated_by']
+            values = [data.get(key, None) for key in keys]
+            for i, key in enumerate(['validation_config', 'extraction_config', 'dedup_config', 'data_schema', 'denorm_config', 'router_config', 'dataset_config', 'tags']):
+                if values[keys.index(key)] is not None:
+                    values[keys.index(key)] = json.dumps(values[keys.index(key)])
+            values.extend([created_date, created_date, created_date])
+            cur.execute("""INSERT INTO datasets (id, dataset_id, "type", "name", validation_config, extraction_config, dedup_config, data_schema, denorm_config, router_config, dataset_config, tags, data_version, status, created_by, updated_by, created_date, updated_date, published_date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", tuple(values))
+
+            is_valid, error_message = validate_dataset_data(data)
+            if not is_valid:
+                return False, error_message
+
             conn.commit()
             return True, None
         except Exception as e:
@@ -125,6 +158,8 @@ class DatasetModel:
 
             set_clause = ', '.join([f"{field} = %s" for field in data.keys()])
             query = f"UPDATE datasets SET {set_clause} WHERE id = %s"
+            updated_date = self.get_system_time()
+            data['updated_date'] = updated_date
             values = list(data.values())
             values.append(id)
 
@@ -171,6 +206,7 @@ class DatasetModel:
         conn, cur = self.get_conn()
         if not conn or not cur:
             return False, "Failed to get database connection"
+        
 
         try:
             cur.execute("SELECT COUNT(*) FROM datasets WHERE id = %s AND is_deleted = false", (id,))
@@ -219,11 +255,10 @@ class DatasetModel:
                 data['status'],
                 data['created_by'],
                 data['updated_by'],
-                data['created_date'],
-                data['updated_date'],
-                data['published_date'],
                 id
             )
+            updated_date = self.get_system_time()
+            data['updated_date'] = updated_date,
 
             cur.execute(query, values)
             conn.commit()

@@ -5,3 +5,4 @@
 /app/templates
 /app/.prettierrc
 /dataset-api
+app/sample.txt

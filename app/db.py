@@ -1,12 +1,15 @@
 import os
 import psycopg2
 import psycopg2.pool
+from dotenv import load_dotenv
+
+load_dotenv()
 
 db_params = {
     'dbname': os.getenv('POSTGRES_DB', 'postgres'),
-    'user': os.getenv('POSTGRES_USER', 'obsrv_user'), 
-    'password': os.getenv('POSTGRES_PASSWORD', 'obsrv123'),
-    'host': os.getenv('POSTGRES_HOST', 'localhost'),
+    'user': os.getenv('POSTGRES_USER', 'postgres'), 
+    'password': os.getenv('POSTGRES_PASSWORD', 'yj3OyEEppH'),
+    'host': os.getenv('POSTGRES_HOST', 'postgresql.postgres'),
     'port': os.getenv('POSTGRES_PORT', '5432')
 }
 

@@ -1,5 +1,13 @@
 -- init.sql
-CREATE USER obsrv_user WITH PASSWORD 'obsrv123';
+DO
+    $$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'obsrv_user') THEN
+            CREATE USER obsrv_user WITH PASSWORD 'obsrv123';
+        END IF;
+    END
+    $$;
+-- CREATE USER IF NOT EXISTS obsrv_user WITH PASSWORD 'obsrv123';
 GRANT ALL PRIVILEGES ON DATABASE postgres TO obsrv_user;
 
 CREATE TABLE IF NOT EXISTS datasets (
@@ -27,4 +35,4 @@ CREATE TABLE IF NOT EXISTS datasets (
 ALTER TABLE datasets OWNER TO obsrv_user;
 
 ALTER TABLE datasets
-ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE;
+ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;

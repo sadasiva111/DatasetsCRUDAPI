@@ -1,0 +1,4 @@
+java.lang.ArithmeticException: / by zero
+java.lang.IllegalArgumentException: Invalid input: "xyz"
+java.io.FileNotFoundException: /path/to/data.txt (No such file or directory)
+java.lang.OutOfMemoryError: Java heap space
