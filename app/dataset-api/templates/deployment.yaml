@@ -32,11 +32,7 @@ spec:
         - name: init-script
           configMap:
             name: {{ .Chart.Name }}-config
-
-      {{- if .Values.image.imagePullSecrets }}
-      imagePullSecrets:
-      - name: {{ .Values.image.imagePullSecrets }}
-      {{- end }}
+            
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.image_tag }}"

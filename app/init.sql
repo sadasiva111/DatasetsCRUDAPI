@@ -7,7 +7,7 @@ DO
         END IF;
     END
     $$;
--- CREATE USER IF NOT EXISTS obsrv_user WITH PASSWORD 'obsrv123';
+    
 GRANT ALL PRIVILEGES ON DATABASE postgres TO obsrv_user;
 
 CREATE TABLE IF NOT EXISTS datasets (
